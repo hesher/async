@@ -1,0 +1,28 @@
+{
+  "name": "async",
+  "version": "1.0.0",
+  "description": "Working with async code, functionally",
+  "main": "index.js",
+  "scripts": {
+    "start": "webpack --config webpack.config.js",
+    "dev": "webpack --mode development",
+    "build": "webpack --mode production"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hesher/async.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hesher/async/issues"
+  },
+  "homepage": "https://github.com/hesher/async#readme",
+  "devDependencies": {
+    "webpack": "^4.1.1"
+  },
+  "dependencies": {
+    "lodash": "^4.17.5",
+    "webpack-cli": "^2.0.12"
+  }
+}
