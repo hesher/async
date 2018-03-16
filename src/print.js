@@ -6,52 +6,52 @@ export function unusedShit() {
   console.log('whaever');
 }
 
-// var map = transform => x => transform(x);
-// var filter = predicate => x => (predicate(x) ? x : null);
+var map = transform => x => transform(x);
+var filter = predicate => x => (predicate(x) ? x : null);
 
-// function wrap(asyncGen, modifiers = []) {
-//   return {
-//     asyncGen,
-//     map: transform => wrap(asyncGen, [...modifiers, map(transform)]),
-//     take: n => collect(asyncGen, modifiers, n),
-//     filter: predicate => wrap(asyncGen, [...modifiers, filter(predicate)]),
-//     forEach: func => act(asyncGen, modifiers, func)
-//   };
-// }
+export function wrap(asyncGen, modifiers = []) {
+  return {
+    asyncGen,
+    map: transform => wrap(asyncGen, [...modifiers, map(transform)]),
+    take: n => collect(asyncGen, modifiers, n),
+    filter: predicate => wrap(asyncGen, [...modifiers, filter(predicate)]),
+    forEach: func => act(asyncGen, modifiers, func)
+  };
+}
 
-// async function collect(gen, modifiers, n) {
-//   const arr = [];
-//   let i = n;
-//   for await (let x of gen) {
-//     const val = calc(x, modifiers);
-//     if (val !== null) {
-//       arr.push(val);
-//       if (--i <= 0) break;
-//     }
-//   }
-//   return arr;
-// }
+async function collect(gen, modifiers, n) {
+  const arr = [];
+  let i = n;
+  for await (let x of gen) {
+    const val = calc(x, modifiers);
+    if (val !== null) {
+      arr.push(val);
+      if (--i <= 0) break;
+    }
+  }
+  return arr;
+}
 
-// var Value = (value, isNull = value === null) => ({
-//   value,
-//   map: func => (isNull ? Value(value) : Value(func(value)))
-// });
+var Value = (value, isNull = value === null) => ({
+  value,
+  map: func => (isNull ? Value(value) : Value(func(value)))
+});
 
-// var calc = (x, modifiers) => {
-//   return modifiers.reduce(
-//     (val, currModifier) => val.map(currModifier),
-//     Value(x)
-//   ).value;
-// };
+var calc = (x, modifiers) => {
+  return modifiers.reduce(
+    (val, currModifier) => val.map(currModifier),
+    Value(x)
+  ).value;
+};
 
-// async function act(gen, modifiers, func) {
-//   for await (let x of gen) {
-//     const val = calc(x, modifiers);
-//     if (val !== null) {
-//       func(val);
-//     }
-//   }
-// }
+async function act(gen, modifiers, func) {
+  for await (let x of gen) {
+    const val = calc(x, modifiers);
+    if (val !== null) {
+      func(val);
+    }
+  }
+}
 
 // // demo
 var timer = (time = 500) =>
