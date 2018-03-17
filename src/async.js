@@ -1,11 +1,3 @@
-export default function printMe() {
-  console.log('I get called from print.js!');
-}
-
-export function unusedShit() {
-  console.log('whaever');
-}
-
 var map = transform => x => transform(x);
 var filter = predicate => x => (predicate(x) ? x : null);
 
@@ -52,15 +44,29 @@ async function act(gen, modifiers, func) {
     }
   }
 }
-
-// // demo
-var timer = (time = 500) =>
-  new Promise(resolve => setTimeout(() => resolve(), time));
-async function* genNums(n = 999) {
-  for (let i = 0; i < n; i++) {
-    yield timer(100).then(() => i);
+export async function* on(event, element) {
+  const listeners = [];
+  element.addEventListener(event, ev => {
+    listeners.forEach(listener => listener(ev, () => (listeners.length = 0)));
+  });
+  while (true) {
+    yield new Promise(resolve =>
+      listeners.push((ev, unregister) => {
+        resolve(ev);
+        unregister();
+      })
+    );
   }
 }
+
+// // demo
+// var timer = (time = 500) =>
+//   new Promise(resolve => setTimeout(() => resolve(), time));
+// async function* genNums(n = 999) {
+//   for (let i = 0; i < n; i++) {
+//     yield timer(100).then(() => i);
+//   }
+// }
 
 // wrap(genNums()) // [0, 1, 2,…]
 //   .map(x => x + 1) // [1, 2, 3,…]
