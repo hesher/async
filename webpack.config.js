@@ -5,7 +5,10 @@ const webpack = require('webpack');
 
 module.exports = {
   // entry: [{app: './src/index.js'}],
-  entry: ['babel-polyfill', './src/index.js'],
+  entry: ['./src/index.ts'],
+  resolve: {
+    extensions: ['.js', '.json', '.ts']
+  },
   plugins: [
     new CleanWebpackPlugin(['dist']),
     new HtmlWebpackPlugin({
@@ -34,15 +37,20 @@ module.exports = {
         use: ['file-loader']
       },
       {
-        test: /\.js$/,
-        exclude: /(node_modules|bower_components)/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-            presets: ['@babel/preset-env']
-          }
-        }
+        test: /\.tsx?$/,
+        use: 'ts-loader',
+        exclude: /node_modules/
       }
+      // {
+      //   test: /\.js$/,
+      //   exclude: /(node_modules|bower_components)/,
+      //   use: {
+      //     loader: 'babel-loader',
+      //     options: {
+      //       presets: ['@babel/preset-env']
+      //     }
+      //   }
+      // }
     ]
   }
 };
