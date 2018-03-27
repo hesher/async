@@ -1,22 +1,39 @@
-var map = transform => x => transform(x);
-var filter = predicate => x => (predicate(x) ? x : null);
+type Transform<T, S> = (v: T) => S;
+type Predicate<T> = (v: T) => boolean;
+const map = <T, S>(transform: Transform<T, S>) => (x: T) => transform(x);
+const filter = <T>(predicate: Predicate<T>) => (x: T) =>
+  predicate(x) ? x : null;
 
-var calc = (x, modifiers) => {
+type Modifier<T, S> = Transform<T, S> | Predicate<T>;
+type Listener = (...x: any[]) => void;
+type Modifiers = Array<Modifier<any, any>>;
+
+const calc = <T>(x: T, modifiers: Modifiers) => {
   return modifiers.reduce(
     (val, currModifier) => val.map(currModifier),
     Value(x)
   );
 };
-export function wrap(asyncGen, modifiers = []) {
+export function wrap<T>(
+  asyncGen: AsyncIterableIterator<T>,
+  modifiers: Modifiers = []
+) {
   return {
     asyncGen,
-    map: transform => wrap(asyncGen, [...modifiers, map(transform)]),
-    take: n => collect(asyncGen, modifiers, n),
-    filter: predicate => wrap(asyncGen, [...modifiers, filter(predicate)]),
-    forEach: func => act(asyncGen, modifiers, func)
+    map: <S>(transform: Transform<T, S>) =>
+      wrap(asyncGen, [...modifiers, map(transform)]),
+    filter: (predicate: Predicate<T>) =>
+      wrap(asyncGen, [...modifiers, filter(predicate)]),
+    throttle: (time: number) => wrap(asyncGen, modifiers),
+    take: (n: number) => collect(asyncGen, modifiers, n),
+    forEach: (func: Listener) => act(asyncGen, modifiers, func)
   };
 }
-async function act(gen, modifiers, func) {
+async function act<T>(
+  gen: AsyncIterableIterator<T>,
+  modifiers: Modifiers,
+  func: Listener
+) {
   for await (let x of gen) {
     const {value, retain} = calc(x, modifiers);
     if (retain) {
@@ -25,7 +42,11 @@ async function act(gen, modifiers, func) {
   }
 }
 
-async function collect(gen, modifiers, n) {
+async function collect<T>(
+  gen: AsyncIterableIterator<T>,
+  modifiers: Modifiers,
+  n: number
+) {
   const arr = [];
   let i = n;
   for await (let x of gen) {
@@ -38,14 +59,14 @@ async function collect(gen, modifiers, n) {
   return arr;
 }
 
-var Value = (value, isNull = value === null) => ({
+var Value = <T>(value: T, isNull = value === null) => ({
   value,
   retain: value !== null,
-  map: func => (isNull ? Value(value) : Value(func(value)))
+  map: <S>(func: Modifier<T, S>) => (isNull ? Value(value) : Value(func(value)))
 });
 
-export async function* on(event, element) {
-  const listeners = [];
+export async function* on(event: string, element: HTMLElement) {
+  const listeners: Array<Listener> = [];
   element.addEventListener(event, ev => {
     listeners.forEach(listener => listener(ev, () => (listeners.length = 0)));
   });
@@ -70,8 +91,7 @@ async function* genNums(n = 999) {
 
 wrap(genNums()) // [0, 1, 2,…]
   .map(x => x + 1) // [1, 2, 3,…]
-  .filter(x => x > 2) // [2, 4, 6,…]
   .map(x => x * x)
-  .filter(x => x % 7 === 0)
+  .throttle(200)
   .take(3)
-  .then(x => console.log(x));
+  .then(x => console.log('Taken Values: ', x));
