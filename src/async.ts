@@ -5,7 +5,7 @@ const filter = <T>(predicate: Predicate<T>) => (x: T) =>
   predicate(x) ? x : null;
 
 type Modifier<T, S> = Transform<T, S> | Predicate<T>;
-type Listener<T = any, S = any> = (x?: T, y?: S, rest?: any[]) => void;
+type Listener<T = any, S = any> = (x: T, y?: S, rest?: any[]) => void;
 type Modifiers = Array<Modifier<any, any>>;
 
 const calc = <T>(x: T, modifiers: Modifiers) => {

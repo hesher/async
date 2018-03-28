@@ -9,7 +9,7 @@ async function* genNums(n = 9999) {
 
 describe('async', () => {
   it('should allow to map, filter and take', async () => {
-    const observer = wrap<number>(genNums())
+    const observer = wrap(genNums())
       .map(x => x * 2)
       .filter(x => x > 0)
       .take<number>(3);
