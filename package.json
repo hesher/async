@@ -7,7 +7,8 @@
     "dev": "webpack --mode development",
     "build": "webpack --mode production",
     "start": "webpack-dev-server --open --mode development",
-    "test": "jest --watch"
+    "test":
+      "node --harmony-async-iteration ./node_modules/jest/bin/jest.js --watch"
   },
   "repository": {
     "type": "git",
@@ -21,7 +22,6 @@
   "homepage": "https://github.com/hesher/async#readme",
   "devDependencies": {
     "@types/jest": "^22.2.2",
-    "babel-plugin-transform-async-generator-functions": "^6.24.1",
     "babel-preset-env": "^1.6.1",
     "clean-webpack-plugin": "^0.1.19",
     "css-loader": "^0.28.10",
@@ -37,10 +37,10 @@
     "webpack-dev-server": "^3.1.1"
   },
   "jest": {
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
     "transform": {
       "^.+\\.tsx?$": "ts-jest"
     },
-    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
     "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json", "node"]
   },
   "dependencies": {

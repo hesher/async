@@ -79,19 +79,3 @@ export async function* on(event: string, element: HTMLElement) {
     );
   }
 }
-
-// demo
-var timer = (time = 500) =>
-  new Promise(resolve => setTimeout(() => resolve(), time));
-async function* genNums(n = 999) {
-  for (let i = 0; i < n; i++) {
-    yield timer(100).then(() => i);
-  }
-}
-
-wrap(genNums()) // [0, 1, 2,…]
-  .map(x => x + 1) // [1, 2, 3,…]
-  .map(x => x * x)
-  .throttle(200)
-  .take(3)
-  .then(x => console.log('Taken Values: ', x));
