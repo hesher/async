@@ -9,10 +9,10 @@ async function* genNums(n = 9999) {
 
 describe('async', () => {
   it('should allow to map, filter and take', async () => {
-    const observer = wrap(genNums())
+    const observer = wrap<number>(genNums())
       .map(x => x * 2)
       .filter(x => x > 0)
-      .take(3);
+      .take<number>(3);
     expect(await observer).toEqual([2, 4, 6]);
   });
   it('should allow to map, filter and forEach', async () => {
@@ -20,7 +20,7 @@ describe('async', () => {
     await wrap(genNums(5))
       .map(x => x * 2)
       .filter(x => x > 0)
-      .forEach(x => acc.push(x));
+      .forEach<number>(x => acc.push(x));
     expect(acc).toEqual([2, 4, 6, 8]);
   });
 });

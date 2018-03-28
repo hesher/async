@@ -5,7 +5,7 @@ const filter = <T>(predicate: Predicate<T>) => (x: T) =>
   predicate(x) ? x : null;
 
 type Modifier<T, S> = Transform<T, S> | Predicate<T>;
-type Listener = (...x: any[]) => void;
+type Listener<T = any, S = any> = (x?: T, y?: S, rest?: any[]) => void;
 type Modifiers = Array<Modifier<any, any>>;
 
 const calc = <T>(x: T, modifiers: Modifiers) => {
@@ -25,14 +25,14 @@ export function wrap<T>(
     filter: (predicate: Predicate<T>) =>
       wrap(asyncGen, [...modifiers, filter(predicate)]),
     throttle: (time: number) => wrap(asyncGen, modifiers),
-    take: (n: number) => collect(asyncGen, modifiers, n),
-    forEach: (func: Listener) => act(asyncGen, modifiers, func)
+    take: <W = any>(n: number): Promise<W[]> => collect(asyncGen, modifiers, n),
+    forEach: <W = any>(func: Listener<W>) => act(asyncGen, modifiers, func)
   };
 }
-async function act<T>(
+async function act<T, W>(
   gen: AsyncIterableIterator<T>,
   modifiers: Modifiers,
-  func: Listener
+  func: Listener<W>
 ) {
   for await (let x of gen) {
     const {value, retain} = calc(x, modifiers);
@@ -42,11 +42,11 @@ async function act<T>(
   }
 }
 
-async function collect<T>(
+async function collect<T, W>(
   gen: AsyncIterableIterator<T>,
   modifiers: Modifiers,
   n: number
-) {
+): Promise<W[]> {
   const arr = [];
   let i = n;
   for await (let x of gen) {
@@ -66,7 +66,7 @@ var Value = <T>(value: T, isNull = value === null) => ({
 });
 
 export async function* on(event: string, element: HTMLElement) {
-  const listeners: Array<Listener> = [];
+  const listeners: Array<Listener<any>> = [];
   element.addEventListener(event, ev => {
     listeners.forEach(listener => listener(ev, () => (listeners.length = 0)));
   });
