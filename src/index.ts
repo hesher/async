@@ -6,7 +6,7 @@ function component() {
   const btn = document.createElement('button');
 
   btn.innerHTML = 'Click Me Mon frere';
-  wrap(on('mouseenter', btn)).forEach<Event>(ev => {
+  wrap(on('mouseenter', btn)).forEach(ev => {
     if (ev) {
       console.log('BOOM!!!', ev.target);
     }

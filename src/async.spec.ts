@@ -12,7 +12,7 @@ describe('async', () => {
     const observer = wrap(genNums())
       .map(x => x * 2)
       .filter(x => x > 0)
-      .take<number>(3);
+      .take(3);
     expect(await observer).toEqual([2, 4, 6]);
   });
   it('should allow to map, filter and forEach', async () => {
@@ -20,7 +20,7 @@ describe('async', () => {
     await wrap(genNums(5))
       .map(x => x * 2)
       .filter(x => x > 0)
-      .forEach<number>(x => acc.push(x));
+      .forEach(x => acc.push(x));
     expect(acc).toEqual([2, 4, 6, 8]);
   });
 });

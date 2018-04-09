@@ -1,0 +1,16 @@
+{
+  "defaultSeverity": "error",
+  "extends": ["tslint-config-prettier"],
+  "jsRules": {},
+  "rules": {
+    "prefer-const": true,
+    "no-angle-bracket-type-assertion": true,
+    "no-inferrable-types": true,
+    "no-invalid-this": true,
+    "prefer-for-of": true,
+    "object-literal-shorthand": true,
+    "prefer-conditional-expression": true,
+    "triple-equals": true
+  },
+  "rulesDirectory": []
+}
