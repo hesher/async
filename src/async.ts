@@ -31,30 +31,26 @@ const buffer = (size: number) => <T>(
 ): AggVal<any> => {
   let ret: AggVal<any>;
   const buff = prev.props['buffering'] || 0;
-  if (!curr.nulled) {
-    if (buff === 0) {
-      ret = {
-        ...curr,
-        nulled: true,
-        props: {...curr.props, buffering: buff + 1},
-        val: [curr.val]
-      };
-    } else if (buff < size - 1) {
-      ret = {
-        ...curr,
-        nulled: true,
-        props: {...curr.props, buffering: buff + 1},
-        val: [...prev.val, curr.val]
-      };
-    } else {
-      ret = {
-        ...curr,
-        props: {...curr.props, buffering: 0},
-        val: [...prev.val, curr.val]
-      };
-    }
+  if (buff === 0) {
+    ret = {
+      ...curr,
+      nulled: true,
+      props: {...curr.props, buffering: buff + 1},
+      val: [curr.val]
+    };
+  } else if (buff < size - 1) {
+    ret = {
+      ...curr,
+      nulled: true,
+      props: {...curr.props, buffering: buff + 1},
+      val: [...prev.val, curr.val]
+    };
   } else {
-    ret = curr;
+    ret = {
+      ...curr,
+      props: {...curr.props, buffering: 0},
+      val: [...prev.val, curr.val]
+    };
   }
 
   return ret;
