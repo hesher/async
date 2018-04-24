@@ -1,9 +1,6 @@
-type AggVal<T> = {
-  val: T;
-  nulled: boolean;
-  skipped: number;
-  props: {[k: string]: any};
-};
+import {AggVal} from './AggVal';
+import {buffer} from './buffer';
+import {throttle} from './throttle';
 const Null = <T>(x): AggVal<null> => ({
   ...x,
   nulled: true
@@ -13,52 +10,11 @@ const map = transform => <T>(x: AggVal<T>) => ({...x, val: transform(x.val)});
 const filter = predicate => <T>(x: AggVal<T>) => {
   return predicate(x.val) ? x : Null(x);
 };
-const throttle = (n: number) => <T>(
-  curr: AggVal<T>,
-  prev: AggVal<T>
-): AggVal<T> => {
-  const ret = curr.nulled
-    ? curr
-    : prev.skipped < n && prev.skipped >= 0
-      ? {...curr, skipped: prev.skipped + 1, nulled: true}
-      : {...curr, skipped: 0};
-  return ret;
-};
 
-const buffer = (size: number) => <T>(
-  curr: AggVal<T>,
-  prev: AggVal<any>
-): AggVal<any> => {
-  let ret: AggVal<any>;
-  const buff = prev.props['buffering'] || 0;
-  if (buff === 0) {
-    ret = {
-      ...curr,
-      nulled: true,
-      props: {...curr.props, buffering: buff + 1},
-      val: [curr.val]
-    };
-  } else if (buff < size - 1) {
-    ret = {
-      ...curr,
-      nulled: true,
-      props: {...curr.props, buffering: buff + 1},
-      val: [...prev.val, curr.val]
-    };
-  } else {
-    ret = {
-      ...curr,
-      props: {...curr.props, buffering: 0},
-      val: [...prev.val, curr.val]
-    };
-  }
-
-  return ret;
-};
 const calc = <T>(x: T, modifiers, prevX: T) => {
   return modifiers.reduce(
     (val, currModifier) => val.map(currModifier, prevX),
-    Value({val: x, nulled: false, skipped: -1, props: {}})
+    Value({val: x, nulled: false, props: {}})
   );
 };
 export function wrap<T, S>(
@@ -80,7 +36,6 @@ export function wrap<T, S>(
 async function act<T>(gen, modifiers, func) {
   let prevX: AggVal<null> | AggVal<T> = {
     val: null,
-    skipped: -1,
     nulled: false,
     props: {}
   };
@@ -98,7 +53,6 @@ async function collect<T>(gen, modifiers, n: number) {
   let i = n;
   let prevX: AggVal<null> | AggVal<T> = {
     val: null,
-    skipped: -1,
     nulled: false,
     props: {}
   };
@@ -125,18 +79,3 @@ const Value = <T>(value: AggVal<T>) => ({
       ? Value({...prevVal, nulled: true})
       : Value(func(value, prevVal))
 });
-
-export async function* on(event: string, element: HTMLElement) {
-  const listeners: Function[] = [];
-  element.addEventListener(event, ev => {
-    listeners.forEach(listener => listener(ev, () => (listeners.length = 0)));
-  });
-  while (true) {
-    yield new Promise(resolve =>
-      listeners.push((ev, unregister) => {
-        resolve(ev);
-        unregister();
-      })
-    );
-  }
-}
