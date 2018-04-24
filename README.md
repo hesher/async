@@ -23,7 +23,7 @@ it('should allow to buffer', async () => {
 Binding to DOM events using `onEvent()`:
 
 ```javascript
-wrap(onEvent('mouseenter', btn))
+wrap(onEvent('click', btn))
   .throttle(2)
   .forEach(ev => {
     console.log('BOOM!!!', ev.target);
