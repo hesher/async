@@ -4,10 +4,12 @@ export const buffer = (size: number) => <T>(
   prev: AggVal<any>
 ): AggVal<any> => {
   const buff = prev.props['buffering'] || 0;
+  const isFull = buff === size - 1;
+  const isNew = buff === 0;
   return {
     ...curr,
-    nulled: buff === size - 1 ? curr.nulled : true,
-    props: {...curr.props, buffering: buff === size - 1 ? 0 : buff + 1},
-    val: [...(buff === 0 ? [] : prev.val), curr.val]
+    nulled: !isFull,
+    props: {...curr.props, buffering: isFull ? 0 : buff + 1},
+    val: [...(isNew ? [] : prev.val), curr.val]
   };
 };
