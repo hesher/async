@@ -7,9 +7,11 @@ function component() {
   const btn = document.createElement('button');
 
   btn.innerHTML = 'Click Me Mon frere';
-  wrap(onEvent('mouseenter', btn)).forEach(ev => {
-    console.log('BOOM!!!', ev.target);
-  });
+  wrap(onEvent('mouseenter', btn))
+    .throttle(2)
+    .forEach(ev => {
+      console.log('BOOM!!!', ev.target);
+    });
 
   element.innerHTML = 'The Async App!';
   element.classList.add('hello');

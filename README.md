@@ -23,9 +23,11 @@ it('should allow to buffer', async () => {
 Binding to DOM events using `onEvent()`:
 
 ```javascript
-wrap(onEvent('mouseenter', btn)).forEach(ev => {
-  console.log('BOOM!!!', ev.target);
-});
+wrap(onEvent('mouseenter', btn))
+  .throttle(2)
+  .forEach(ev => {
+    console.log('BOOM!!!', ev.target);
+  });
 ```
 
 ## Installation
