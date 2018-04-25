@@ -1,9 +1,9 @@
 import {wrap} from './async';
 const timer = (time = 500) =>
   new Promise(resolve => setTimeout(() => resolve(), time));
-async function* genNums(n = 9999) {
+async function* genNums(n = 9999, interval = 1) {
   for (let i = 0; i < n; i++) {
-    yield timer(1).then(() => i);
+    yield timer(interval).then(() => i);
   }
 }
 
@@ -48,5 +48,13 @@ describe('async', () => {
         .buffer(2)
         .take(2)
     ).toEqual([[0, 2], [4, 6]]);
+  });
+
+  it.only('should allow to buffer', async () => {
+    expect(
+      await wrap(genNums(9, 20))
+        .throttleByTime(50)
+        .take(3)
+    ).toEqual([0, 3, 6]);
   });
 });

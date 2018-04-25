@@ -1,6 +1,7 @@
 import {AggVal} from './AggVal';
 import {buffer} from './buffer';
 import {throttle} from './throttle';
+import {throttleByTime} from './throttleByTime';
 const Null = <T>(x): AggVal<null> => ({
   ...x,
   nulled: true
@@ -25,10 +26,14 @@ export function wrap<T, S>(
 ) {
   return {
     asyncGen,
+    // Modifiers
     map: <S>(transform) => wrap(asyncGen, [...modifiers, map(transform)]),
     filter: predicate => wrap(asyncGen, [...modifiers, filter(predicate)]),
     throttle: (time: number) => wrap(asyncGen, [...modifiers, throttle(time)]),
+    throttleByTime: (time: number) =>
+      wrap(asyncGen, [...modifiers, throttleByTime(time)]),
     buffer: (size: number) => wrap(asyncGen, [...modifiers, buffer(size)]),
+    // Extractors
     take: (n: number) => collect(asyncGen, modifiers, n),
     forEach: func => act(asyncGen, modifiers, func)
   };
