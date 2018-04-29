@@ -8,7 +8,7 @@ function component() {
 
   btn.innerHTML = 'Click Me Bro';
   wrap(onEvent('click', btn))
-    .throttle(2)
+    .timeThrottle(2000)
     .forEach(ev => {
       console.log('BOOM!!!', ev.target);
     });

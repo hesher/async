@@ -1,6 +1,7 @@
 import {AggVal} from './AggVal';
 import {buffer} from './buffer';
 import {throttle} from './throttle';
+import {timeThrottle} from './timeThrottle';
 const Null = <T>(x): AggVal<null> => ({
   ...x,
   nulled: true
@@ -28,6 +29,8 @@ export function wrap<T, S>(
     map: <S>(transform) => wrap(asyncGen, [...modifiers, map(transform)]),
     filter: predicate => wrap(asyncGen, [...modifiers, filter(predicate)]),
     throttle: (time: number) => wrap(asyncGen, [...modifiers, throttle(time)]),
+    timeThrottle: (ms: number) =>
+      wrap(asyncGen, [...modifiers, timeThrottle(ms)]),
     buffer: (size: number) => wrap(asyncGen, [...modifiers, buffer(size)]),
     take: (n: number) => collect(asyncGen, modifiers, n),
     forEach: func => act(asyncGen, modifiers, func)
