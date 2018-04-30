@@ -1,7 +1,6 @@
 import {AggVal} from './AggVal';
 import {buffer} from './buffer';
 import {throttle} from './throttle';
-import {timeThrottle} from './timeThrottle';
 const Null = <T>(x): AggVal<null> => ({
   ...x,
   nulled: true
@@ -18,24 +17,48 @@ const calc = <T>(x: T, modifiers, prevX: T) => {
     Value({val: x, nulled: false, props: {}})
   );
 };
+
+// let wrap = factory().addModifier({ 'timeThrottle', timeThrottle }).wrap;
+type ModifierConfig = {name: string; modifier: Function};
+type FactoryParams = {addedModifiers: ModifierConfig[]};
+export const factory = (modifiers: Array<ModifierConfig> = []) => ({
+  addModifier: modifier => factory([...modifiers, modifier]),
+  wrap: (asyncGen, pModifiers?, params: FactoryParams = {addedModifiers: []}) =>
+    wrap(asyncGen, pModifiers, {
+      ...params,
+      addedModifiers: [...(params && params.addedModifiers), ...modifiers]
+    })
+});
 export function wrap<T, S>(
   asyncGen: AsyncIterableIterator<T>,
   modifiers: Array<
     (x: AggVal<T>, prev: AggVal<T>) => AggVal<S> | AggVal<T>
-  > = []
+  > = [],
+  {addedModifiers = []}: {addedModifiers?: ModifierConfig[]} = {}
 ) {
   return {
     asyncGen,
-    map: <S>(transform) => wrap(asyncGen, [...modifiers, map(transform)]),
+    ...addedModifiers,
+    //modifier
+    map: transform => wrap(asyncGen, [...modifiers, map(transform)]),
     filter: predicate => wrap(asyncGen, [...modifiers, filter(predicate)]),
     throttle: (time: number) => wrap(asyncGen, [...modifiers, throttle(time)]),
-    timeThrottle: (ms: number) =>
-      wrap(asyncGen, [...modifiers, timeThrottle(ms)]),
+    // timeThrottle: (ms: number) =>
+    //   wrap(asyncGen, [...modifiers, timeThrottle(ms)]),
     buffer: (size: number) => wrap(asyncGen, [...modifiers, buffer(size)]),
+    ...addedModifiers.reduce(
+      (acc, curr) => ({
+        [curr.name]: (...args) =>
+          wrap(asyncGen, [...modifiers, curr.modifier(args)])
+      }),
+      {}
+    ),
+    // consumber
     take: (n: number) => collect(asyncGen, modifiers, n),
     forEach: func => act(asyncGen, modifiers, func)
   };
 }
+
 async function act<T>(gen, modifiers, func) {
   let prevX: AggVal<null> | AggVal<T> = {
     val: null,

@@ -1,12 +1,14 @@
 import './style.css';
-import {wrap} from './async';
+import {factory} from './async';
 import {onEvent} from './onEvent';
+import {timeThrottleConfig} from './timeThrottle';
 
 function component() {
   const element = document.createElement('div');
   const btn = document.createElement('button');
 
   btn.innerHTML = 'Click Me Bro';
+  const wrap: any = factory().addModifier(timeThrottleConfig).wrap;
   wrap(onEvent('click', btn))
     .timeThrottle(2000)
     .forEach(ev => {

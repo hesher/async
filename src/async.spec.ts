@@ -1,4 +1,5 @@
-import {wrap} from './async';
+import {wrap, factory} from './async';
+import {timeThrottleConfig} from './timeThrottle';
 const timer = (time = 500) =>
   new Promise(resolve => setTimeout(() => resolve(), time));
 async function* genNums(n = 9999, {delta = 1} = {}) {
@@ -51,8 +52,9 @@ describe('async', () => {
   });
 
   it('should allow to time throttle', async () => {
+    const myWrap: any = factory().addModifier(timeThrottleConfig).wrap;
     expect(
-      await wrap(genNums(4, {delta: 20}))
+      await myWrap(genNums(4, {delta: 20}))
         .timeThrottle(50)
         .take(2)
     ).toEqual([0, 3]);
