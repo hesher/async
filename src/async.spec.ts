@@ -59,4 +59,16 @@ describe('async', () => {
         .take(2)
     ).toEqual([0, 3]);
   });
+  it('should allow to do', async () => {
+    const buff: any[] = [];
+    const result = await wrap(genNums(9))
+      .do(x => buff.push(x))
+      .take(5);
+
+    console.log(`result = ${result}`);
+    console.log(`buff = ${buff}`);
+
+    expect(result).toEqual([0, 1, 2, 3, 4]);
+    expect(buff).toEqual([0, 1, 2, 3, 4]);
+  });
 });
