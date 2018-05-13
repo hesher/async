@@ -1,6 +1,7 @@
 import {AggVal} from './AggVal';
 import {buffer} from './buffer';
 import {throttle} from './throttle';
+import {doModifier} from './do';
 const Null = <T>(x): AggVal<null> => ({
   ...x,
   nulled: true
@@ -36,20 +37,23 @@ export function wrap<T, S>(
   > = [],
   {addedModifiers = []}: {addedModifiers?: ModifierConfig[]} = {}
 ) {
+  const props = {addedModifiers};
   return {
     asyncGen,
     ...addedModifiers,
-    //modifier
-    map: transform => wrap(asyncGen, [...modifiers, map(transform)]),
-    filter: predicate => wrap(asyncGen, [...modifiers, filter(predicate)]),
-    throttle: (time: number) => wrap(asyncGen, [...modifiers, throttle(time)]),
-    // timeThrottle: (ms: number) =>
-    //   wrap(asyncGen, [...modifiers, timeThrottle(ms)]),
-    buffer: (size: number) => wrap(asyncGen, [...modifiers, buffer(size)]),
+    //modifiers
+    map: transform => wrap(asyncGen, [...modifiers, map(transform)], props),
+    do: func => wrap(asyncGen, [...modifiers, doModifier(func)], props),
+    filter: predicate =>
+      wrap(asyncGen, [...modifiers, filter(predicate)], props),
+    throttle: (time: number) =>
+      wrap(asyncGen, [...modifiers, throttle(time)], props),
+    buffer: (size: number) =>
+      wrap(asyncGen, [...modifiers, buffer(size)], props),
     ...addedModifiers.reduce(
       (acc, curr) => ({
         [curr.name]: (...args) =>
-          wrap(asyncGen, [...modifiers, curr.modifier(args)])
+          wrap(asyncGen, [...modifiers, curr.modifier(args)], props)
       }),
       {}
     ),
