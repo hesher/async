@@ -12,14 +12,12 @@ const filter = predicate => <T>(x: AggVal<T>) => {
   return predicate(x.val) ? x : Null(x);
 };
 
-const calc = <T>(x: T, modifiers, prevX: T) => {
-  return modifiers.reduce(
-    (val, currModifier) => val.map(currModifier, prevX),
+const calc = async <T>(x: T, modifiers, prevX: T) =>
+  modifiers.reduce(
+    async (val, currModifier) => (await val).map(currModifier, prevX),
     Value({val: x, nulled: false, props: {}})
   );
-};
 
-// let wrap = factory().addModifier({ 'timeThrottle', timeThrottle }).wrap;
 type ModifierConfig = {name: string; modifier: Function};
 type FactoryParams = {addedModifiers: ModifierConfig[]};
 export const factory = (modifiers: Array<ModifierConfig> = []) => ({
@@ -70,7 +68,8 @@ async function act<T>(gen, modifiers, func) {
     props: {}
   };
   for await (const x of gen) {
-    const curr = calc(x, modifiers, prevX).value as AggVal<T>;
+    const curr = ((await await calc(x, modifiers, prevX)) as any)
+      .value as AggVal<T>;
     prevX = curr;
     if (!curr.nulled) {
       func(curr.val);
@@ -86,8 +85,10 @@ async function collect<T>(gen, modifiers, n: number) {
     nulled: false,
     props: {}
   };
+
   for await (const x of gen) {
-    const curr = calc(x, modifiers, prevX).value as AggVal<T>;
+    const curr = (await ((await calc(x, modifiers, prevX)) as any)
+      .value) as AggVal<T>;
     prevX = curr;
 
     if (!curr.nulled) {
@@ -101,11 +102,11 @@ async function collect<T>(gen, modifiers, n: number) {
 const Value = <T>(value: AggVal<T>) => ({
   value,
   retain: !value.nulled,
-  map: <S>(
+  map: async <S>(
     func: (x: AggVal<T>, prevVal: AggVal<T>) => AggVal<S>,
     prevVal: AggVal<T>
   ) =>
     value.nulled
       ? Value({...prevVal, nulled: true})
-      : Value(func(value, prevVal))
+      : Value(func(await value, prevVal))
 });

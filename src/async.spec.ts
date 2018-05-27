@@ -1,5 +1,6 @@
 import {wrap, factory} from './async';
 import {timeThrottleConfig} from './timeThrottle';
+import {AggVal} from './AggVal';
 const timer = (time = 500) =>
   new Promise(resolve => setTimeout(() => resolve(), time));
 async function* genNums(n = 9999, {delta = 1} = {}) {
@@ -65,10 +66,23 @@ describe('async', () => {
       .do(x => buff.push(x))
       .take(5);
 
-    console.log(`result = ${result}`);
-    console.log(`buff = ${buff}`);
-
     expect(result).toEqual([0, 1, 2, 3, 4]);
     expect(buff).toEqual([0, 1, 2, 3, 4]);
+  });
+
+  it('should allow to return promises from modifier', async () => {
+    const myWrap: any = factory().addModifier({
+      name: 'addOneFuture',
+      modifier: () => (curr: AggVal<number>) =>
+        Promise.resolve({...curr, val: curr.val + 1})
+    }).wrap;
+
+    expect(
+      await myWrap(genNums())
+        .addOneFuture()
+        .addOneFuture()
+        .addOneFuture()
+        .take(3)
+    ).toEqual([3, 4, 5]);
   });
 });
