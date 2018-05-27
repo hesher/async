@@ -3,9 +3,19 @@ import {timeThrottleConfig} from './timeThrottle';
 import {AggVal} from './AggVal';
 const timer = (time = 500) =>
   new Promise(resolve => setTimeout(() => resolve(), time));
+
 async function* genNums(n = 9999, {delta = 1} = {}) {
   for (let i = 0; i < n; i++) {
     yield timer(delta).then(() => i);
+  }
+}
+
+async function* genInterval(clicks: number[]) {
+  let lastClickTS = 0;
+  for (const clickTS of clicks) {
+    await timer(clickTS - lastClickTS);
+    yield clickTS;
+    lastClickTS = clickTS;
   }
 }
 
@@ -68,6 +78,23 @@ describe('async', () => {
 
     expect(result).toEqual([0, 1, 2, 3, 4]);
     expect(buff).toEqual([0, 1, 2, 3, 4]);
+  });
+
+  it.only('should allow to buffer by time', async () => {
+    const myWrap: any = factory().addModifier({
+      name: 'timeBuffer',
+      modifier: bufferTimeout => (curr: AggVal<any>, prev: AggVal<any>) => {
+        console.log(`got ${curr.val}`);
+
+        return curr;
+      }
+    }).wrap;
+
+    expect(
+      await myWrap(genInterval([1, 2, 3, 10, 11, 12]))
+        .timeBuffer(3)
+        .take(2)
+    ).toEqual([[1, 2, 3], [10, 11, 12]]);
   });
 
   it('should allow to return promises from modifier', async () => {
